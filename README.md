@@ -38,7 +38,7 @@ cd backend
 python -m venv .venv
 .venv/Scripts/activate        # .venv/bin/activate on macOS/Linux
 pip install -r requirements-test.txt
-cp .env.example .env
+cp .env.example .env          # then set SECRET_ENCRYPTION_KEY (see Configuration notes)
 alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 
@@ -407,7 +407,8 @@ email/push alert, since this project has no mail infrastructure (see
 
 ## Configuration notes
 
-- `backend/.env`'s `secret_encryption_key` must be a base64-encoded 32-byte value (generate
+- `backend/.env`'s `secret_encryption_key` is **required** — there is no default, so the
+  backend won't start until it's set. It must be a base64-encoded 32-byte value (generate
   with `python -c "import os,base64; print(base64.b64encode(os.urandom(32)).decode())"`).
   It envelope-encrypts TOTP secrets at rest and is independent of `jwt_secret` and the
   password hash — never reuse one for another.

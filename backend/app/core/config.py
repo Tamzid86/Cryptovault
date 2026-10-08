@@ -1,3 +1,7 @@
+import base64
+import binascii
+
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,7 +22,20 @@ class Settings(BaseSettings):
     refresh_cookie_name: str = "cv_refresh"
     refresh_cookie_secure: bool = True
 
-    secret_encryption_key: str = "XbSIP3zGP6A9iTA3deBUKPNsLkKkv7LmPZnkQDCqbwI="
+    secret_encryption_key: str
+
+    @field_validator("secret_encryption_key")
+    @classmethod
+    def _check_secret_encryption_key(cls, v: str) -> str:
+        try:
+            key = base64.b64decode(v, validate=True)
+        except binascii.Error:
+            key = b""
+        if len(key) != 32:
+            raise ValueError(
+                "SECRET_ENCRYPTION_KEY must be base64 that decodes to exactly 32 bytes"
+            )
+        return v
 
     webauthn_rp_id: str = "localhost"
     webauthn_rp_name: str = "CryptVault"
