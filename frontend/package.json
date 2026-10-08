@@ -1,0 +1,35 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "node e2e/auth-smoke.mjs && node e2e/file-upload-smoke.mjs && node e2e/sharing-smoke.mjs && node e2e/totp-smoke.mjs && node e2e/webauthn-smoke.mjs && node e2e/refresh-smoke.mjs && node e2e/reload-smoke.mjs && node e2e/fingerprint-smoke.mjs && node e2e/sessions-smoke.mjs"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.9.7",
+    "@noble/hashes": "^1.8.0",
+    "@simplewebauthn/browser": "^14.0.0",
+    "axios": "^1.20.0",
+    "hash-wasm": "^4.12.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "oxlint": "^1.81.0",
+    "playwright": "^1.63.0",
+    "typescript": "~6.0.2",
+    "vite": "^6.4.3",
+    "vitest": "^4.1.11"
+  }
+}
