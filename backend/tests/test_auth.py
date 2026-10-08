@@ -93,6 +93,23 @@ async def test_account_locks_after_threshold_failed_attempts(client, db_session,
     assert user.locked_until is not None
 
 
+async def test_locked_account_does_not_reveal_whether_password_is_correct(client, key_bundle_fields):
+    await register(client, "alice@example.com", key_bundle_fields)
+
+    for _ in range(5):
+        app.state.limiter.reset()
+        await client.post("/api/v1/auth/login", json={"email": "alice@example.com", "password": "wrong-password"})
+
+    responses = []
+    for password in ("another-wrong-guess", "correct-horse-battery-staple"):
+        app.state.limiter.reset()
+        resp = await client.post("/api/v1/auth/login", json={"email": "alice@example.com", "password": password})
+        responses.append((resp.status_code, resp.json()))
+
+    assert responses[0][0] == 423
+    assert responses[0] == responses[1]
+
+
 async def test_audit_chain_records_register_and_login_and_verifies(client, db_session, key_bundle_fields):
     user_id = (await register(client, "alice@example.com", key_bundle_fields)).json()["id"]
     await client.post(

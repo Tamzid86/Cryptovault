@@ -93,6 +93,9 @@ async def login(request: Request, response: Response, body: LoginRequest, db: As
     dummy_hash = "$argon2id$v=19$m=65536,t=3,p=4$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     password_ok = verify_password(body.password, user.password_hash if user else dummy_hash)
 
+    if user is not None:
+        raise_if_locked(user)
+
     if user is None or not password_ok:
         if user is not None:
             await record_failed_attempt(db, user)
@@ -106,8 +109,6 @@ async def login(request: Request, response: Response, body: LoginRequest, db: As
             )
             await db.commit()
         raise invalid_credentials
-
-    raise_if_locked(user)
 
     has_webauthn = (
         await db.execute(select(WebAuthnCredential.id).where(WebAuthnCredential.user_id == user.id).limit(1))

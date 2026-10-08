@@ -48,6 +48,12 @@ _WEBAUTHN_CHALLENGE_TTL = timedelta(minutes=5)
 
 @router.post("/totp/setup", response_model=TotpSetupResponse)
 async def totp_setup(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    if user.totp_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="TOTP is already enabled; disable it with your password first",
+        )
+
     secret = pyotp.random_base32()
     uri = pyotp.TOTP(secret).provisioning_uri(name=user.email, issuer_name=settings.app_name)
 

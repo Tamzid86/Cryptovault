@@ -119,6 +119,24 @@ async def test_totp_disable_requires_correct_password(client, key_bundle_fields)
     assert resp.json()["tokens"]["access_token"]
 
 
+async def test_totp_setup_cannot_strip_or_replace_enabled_totp(client, key_bundle_fields):
+    headers = await register_and_login(client, key_bundle_fields)
+    secret = await enable_totp(client, headers)
+
+    resp = await client.post("/api/v1/auth/totp/setup", headers=headers)
+    assert resp.status_code == 409
+
+    resp = await client.post(
+        "/api/v1/auth/login", json={"email": "alice@example.com", "password": "correct-horse-battery-staple"}
+    )
+    assert resp.json()["mfa_required"] is True
+    resp = await client.post(
+        "/api/v1/auth/login/mfa/totp",
+        json={"mfa_token": resp.json()["mfa_token"], "code": pyotp.TOTP(secret).now()},
+    )
+    assert resp.status_code == 200
+
+
 async def test_mfa_status_reflects_totp_state(client, key_bundle_fields):
     headers = await register_and_login(client, key_bundle_fields)
 
